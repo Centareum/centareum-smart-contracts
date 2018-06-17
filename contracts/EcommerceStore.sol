@@ -1,6 +1,7 @@
 pragma solidity ^0.4.13;
 
 //Contract to publish/maintain Products in Marketplace
+
 contract EcommerceStore {
 
     //enum to hold valid set for ProductStatus

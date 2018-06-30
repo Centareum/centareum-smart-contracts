@@ -16,6 +16,7 @@ contract EcommerceStore {
     //Map to maintain ProductOwner and his/her Products published in store
     //Key: Address of ProductOwner , Value: ProductMap of the ProductOwner
     //(Product-Map contains all Products published by Owner in order of productIndex)
+    //Product-Map: Key: productIndex , Value:Product Struct
     mapping(address => mapping(uint => Product)) stores;
 
     //Map to maintain owner/publisher of the product and product
@@ -43,7 +44,7 @@ contract EcommerceStore {
     function addProductToStore(string _name, string _category, string _imageLink, string _descLink, uint _startPrice, uint _productCondition) public {
         productIndex += 1;
         Product memory product = Product(productIndex, _name, _category, _imageLink, _descLink,
-            _startPrice, 0, 0, 0, 0, ProductStatus.Open, ProductCondition(_productCondition));
+            _startPrice, ProductStatus.Open, ProductCondition(_productCondition));
         stores[msg.sender][productIndex] = product;
         productIdInStore[productIndex] = msg.sender;
     }

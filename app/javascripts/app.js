@@ -6,20 +6,30 @@ import { default as Web3} from 'web3';
 import { default as contract } from 'truffle-contract'
 import ecommerce_store_artifacts from '../../build/contracts/EcommerceStore.json'
 
+console.log("init ecommerce store");
+
 var EcommerceStore = contract(ecommerce_store_artifacts);
+
 
 const ipfsAPI = require('ipfs-api');
 const ethUtil = require('ethereumjs-util');
 
 const ipfs = ipfsAPI({host: 'localhost', port: '5001', protocol: 'http'});
 
+console.log("init finished ipfs");
+
 
 window.App = {
  start: function() {
   var self = this;
 
-  EcommerceStore.setProvider(web3.currentProvider);
-  renderStore();
+     console.log("inside load");
+
+     EcommerceStore.setProvider(web3.currentProvider);
+
+     console.log("web3 provider set to EcommerceStore");
+
+     renderStore();
 
    var reader;
 
@@ -48,14 +58,51 @@ window.App = {
 };
 
 function renderStore() {
- EcommerceStore.deployed().then(function(i) {
-  i.getProduct.call(4).then(function(p) {
-   $("#product-list").append(buildProduct(p));
-  });
+
+    console.log("render store called");
 
 
+    var contractInstance;
 
- });
+    EcommerceStore.deployed().then(function(instance1,error){console.log(instance1)});
+
+    EcommerceStore.deployed().then(function(instance,error) {
+     contractInstance = instance;
+     console.log("inside contract instance");
+     instance.productIndex.call().then(function(indexResp,error){
+
+         console.log("got productIndex contract instance");
+         console.log("rendering product for count:"+indexResp);
+        for(var i = 1; i<=indexResp; i++ ){
+         renderProduct(contractInstance,i);
+        }
+  })});
+}
+
+function renderProduct(contractInstance,index){
+
+ contractInstance.getProduct.call(index).then(function(product){
+console.log(product);
+  let node = $("<div/>");
+  node.addClass("col-sm-3 text-center col-margin-bottom-1 product");
+     node.append("<div class='title'>" +product[1]+"</div>");
+     node.append("<div> price: " +displayPrice(product[6]+'')+"</div>");
+     console.log(product[6]);
+
+     if(product[6] == 0){
+       $("#product-list").append(node);
+     }else{
+         $("#product-purchased").append(node);
+
+     }
+     });
+
+
+ function displayPrice(amt){
+  return "&Xi;" + web3.utils.fromWei(amt,'ether');
+ }
+
+
 }
 
 function saveImageOnIpfs(reader) {

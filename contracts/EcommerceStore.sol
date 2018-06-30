@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.4.23;
 
 //Contract to publish/maintain Products in Marketplace
 
@@ -36,7 +36,7 @@ contract EcommerceStore {
     }
 
     //constructor
-    function EcommerceStore() public {
+    constructor() public {
         productIndex = 0;
     }
 

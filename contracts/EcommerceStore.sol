@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 //Contract to publish/maintain Products in Marketplace
 
@@ -34,6 +34,7 @@ contract EcommerceStore {
         uint price;
         ProductStatus status;
         ProductCondition condition;
+        address buyer;
     }
 
     //constructor
@@ -45,17 +46,28 @@ contract EcommerceStore {
     function addProductToStore(string _name, string _category, string _imageLink, string _descLink, uint _startTime, uint _price, uint _productCondition) payable public {
         productIndex += 1;
         Product memory product = Product(productIndex, _name, _category, _imageLink, _descLink,
-            _startTime, _price, ProductStatus.Open, ProductCondition(_productCondition));
+            _startTime, _price, ProductStatus.Open, ProductCondition(_productCondition),msg.sender);
         stores[msg.sender][productIndex] = product;
         productIdInStore[productIndex] = msg.sender;
     }
 
     //extract product Data-Struct by ProductIndex
     //Function does a lookup operation on Map for stores
-    function getProduct(uint _productId) view public returns (uint, string, string, string, string, uint, uint,ProductStatus, ProductCondition) {
+    function getProduct(uint _productId) public view  returns (uint, string, string, string, string, uint, uint, ProductStatus, ProductCondition,address) {
         Product memory product = stores[productIdInStore[_productId]][_productId];
-        return (product.id, product.name, product.category, product.imageLink, product.descLink, product.startTime, product.price, product.status, product.condition);
+        return (product.id, product.name, product.category, product.imageLink, product.descLink, product.startTime, product.price, product.status, product.condition,product.buyer);
+    }
+
+    function buy(uint _productIndex) public payable  {
+        Product memory product = stores[productIdInStore[_productIndex]][_productIndex];
+
+        require(product.buyer == address(0));
+
+        require(msg.value >= product.price);
+
+        product.buyer = msg.sender;
+
+        stores[productIdInStore[_productIndex]][_productIndex] = product;
     }
 
 }
-

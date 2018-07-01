@@ -41,7 +41,7 @@ window.App = {
   });
 
   $("#add-item-to-store").submit(function(event) {
-  console.log("");
+  console.log("#add-item-to-store");
    const req = $("#add-item-to-store").serialize();
    let params = JSON.parse('{"' + req.replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}');
    let decodedParams = {}
@@ -50,12 +50,49 @@ window.App = {
     decodedParams[v] = decodeURIComponent(decodeURI(params[v]));
    });
    console.log("saving product with decodedParams"+decodedParams);
-   saveProduct(reader, decodedParams);
+      saveProductToBlockchain(decodedParams);
    event.preventDefault();
    });
 
  }
 };
+
+
+
+function saveProduct( decodedParams) {
+    console.log("saving product on chain");
+    saveProductToBlockchain(decodedParams);
+}
+
+
+function saveProductToBlockchain(params) {
+    console.log(params);
+
+    var fromAcct;
+
+    web3.eth.getAccounts().then(function(resp,error)
+    {
+        fromAcct = resp[0];
+
+        console.log("fromAcct: "+fromAcct)
+
+        EcommerceStore.deployed().then(function(i) {
+
+            console.log("about to add product to store"+params["product-name"]+" - "+params["product-category"]);
+
+            i.addProductToStore(params["product-name"], params["product-category"], 'image', 'desc',
+                Date.parse(params["product-start-time"])/1000,
+                web3.utils.toWei(params["product-price"], 'ether'),
+                parseInt(params["product-condition"]), {from: fromAcct, gas: 4700000})
+                .then(function(f) {
+                    console.log(f);
+                    $("#msg").show();
+                    $("#msg").html("Your product was successfully added to your store!");
+                })
+        });
+    });
+
+}
 
 function renderStore() {
 
@@ -105,35 +142,43 @@ console.log(product);
 
 }
 
+
+
+
 function saveImageOnIpfs(reader) {
- return new Promise(function(resolve, reject) {
-  const buffer = Buffer.from(reader.result);
-  ipfs.add(buffer)
-  .then((response) => {
-   console.log(response)
-   resolve(response[0].hash);
-  }).catch((err) => {
-   console.error(err)
-   reject(err);
-  })
- })
+    console.log("saving image on ipfs");
+    return new Promise(function(resolve, reject) {
+        const buffer = Buffer.from(reader.result);
+        ipfs.add(buffer)
+            .then((response) => {
+                console.log(response)
+                resolve(response[0].hash);
+            }).catch((err) => {
+            console.error(err)
+            reject(err);
+        })
+    })
 }
 
 function saveTextBlobOnIpfs(blob) {
- return new Promise(function(resolve, reject) {
-  const descBuffer = Buffer.from(blob, 'utf-8');
-  ipfs.add(descBuffer)
-  .then((response) => {
-   console.log(response)
-   resolve(response[0].hash);
-  }).catch((err) => {
-   console.error(err)
-   reject(err);
-  })
- })
+    console.log("saving textBlob on ipfs");
 
- function saveProduct(reader, decodedParams) {
-  let imageId, descId;
+    return new Promise(function(resolve, reject) {
+        const descBuffer = Buffer.from(blob, 'utf-8');
+        ipfs.add(descBuffer)
+            .then((response) => {
+                console.log(response)
+                resolve(response[0].hash);
+            }).catch((err) => {
+            console.error(err)
+            reject(err);
+        })
+    })
+
+ function saveProductWithIpfs(reader, decodedParams) {
+     console.log("saving product on ipfs and chain");
+
+     let imageId, descId;
   saveImageOnIpfs(reader).then(function(id) {
     imageId = id;
     console.log("imageId: "+imageId);
@@ -141,26 +186,31 @@ function saveTextBlobOnIpfs(blob) {
       descId = id;
       console.log("descId: "+descId);
 
-       saveProductToBlockchain(decodedParams, imageId, descId);
+        saveProductToBlockchainIpfs(decodedParams, imageId, descId);
     })
  })
 }
 
-function saveProductToBlockchain(params, imageId, descId) {
-  console.log(params);
-  let auctionStartTime = Date.parse(params["product-auction-start"]) / 1000;
-  let auctionEndTime = auctionStartTime + parseInt(params["product-auction-end"]) * 24 * 60 * 60
+    function saveProductToBlockchainIpfs(params, imageId, descId) {
+        console.log(params);
+        let auctionStartTime = Date.parse(params["product-auction-start"]) / 1000;
+        let auctionEndTime = auctionStartTime + parseInt(params["product-auction-end"]) * 24 * 60 * 60
 
-  EcommerceStore.deployed().then(function(i) {
-    i.addProductToStore(params["product-name"], params["product-category"], imageId, descId, auctionStartTime,
-   auctionEndTime, web3.toWei(params["product-price"], 'ether'), parseInt(params["product-condition"]), {from: web3.eth.accounts[0], gas: 440000}).then(function(f) {
-   console.log(f);
-   $("#msg").show();
-   $("#msg").html("Your product was successfully added to your store!");
-  })
- });
+        EcommerceStore.deployed().then(function(i) {
+            i.addProductToStore(params["product-name"], params["product-category"], imageId, descId,
+                Date.parse(params["product-start-time"])/1000,
+                web3.toWei(params["product-price"], 'ether'),
+                parseInt(params["product-condition"]), {from: web3.eth.accounts[0], gas: 440000})
+                .then(function(f) {
+                    console.log(f);
+                    $("#msg").show();
+                    $("#msg").html("Your product was successfully added to your store!");
+                })
+        });
+    }
 }
-}
+
+
 
 function buildProduct(product) {
  let node = $("<div/>");

@@ -42,7 +42,7 @@ contract EcommerceStore {
     }
 
     //add/Publish product to Store.
-    function addProductToStore(string _name, string _category, string _imageLink, string _descLink, uint _startTime, uint _price, uint _productCondition) public {
+    function addProductToStore(string _name, string _category, string _imageLink, string _descLink, uint _startTime, uint _price, uint _productCondition) payable public {
         productIndex += 1;
         Product memory product = Product(productIndex, _name, _category, _imageLink, _descLink,
             _startTime, _price, ProductStatus.Open, ProductCondition(_productCondition));

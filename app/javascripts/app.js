@@ -78,7 +78,7 @@ function saveProductToBlockchain(params) {
 
         EcommerceStore.deployed().then(function(i) {
 
-            console.log("about to add product to store"+params["product-name"]+" - "+params["product-category"]);
+            console.log("about to add product to store"+params["product-name"]+" - "+params["product-category"]+" - "+Date.parse(params["product-start-time"])/1000);
 
             i.addProductToStore(params["product-name"], params["product-category"], 'image', 'desc',
                 Date.parse(params["product-start-time"])/1000,
@@ -126,12 +126,8 @@ console.log(product);
      node.append("<div> price: " +displayPrice(product[6]+'')+"</div>");
      console.log(product[6]);
 
-     if(product[6] == 0){
        $("#product-list").append(node);
-     }else{
-         $("#product-purchased").append(node);
-
-     }
+    
      });
 
 

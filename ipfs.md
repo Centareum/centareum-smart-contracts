@@ -162,6 +162,7 @@ Browse:
 
 ./ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods "[\"PUT\", \"POST\", \"GET\"]"
 ./ipfs config --json API.HTTPHeaders.Access-Control-Allow-Credentials '["true"]'
+./ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["*"]'
 
 -----------------------------------------------------------------------------------------------------------------------------
 

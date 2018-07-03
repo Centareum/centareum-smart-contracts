@@ -144,9 +144,13 @@ function renderProduct(contractInstance, index) {
         node.append("<div> price: " + displayPrice(product[6] + '') + "</div>");
         node.append("<a href='product.html?id=" + product[0] + "'>Details</div>");
 
-        console.log(product[6]);
+        console.log("7: "+product[7]);
 
-        $("#product-list").append(node);
+        if(product[7] == 0) {
+            $("#product-list").append(node);
+        }else{
+            $("#product-purchased").append(node);
+        }
 
     });
 
@@ -158,6 +162,7 @@ function renderProductDetails(productId) {
     EcommerceStore.deployed().then(function (resp) {
 
         resp.getProduct.call(productId).then(function (product) {
+            console.log("price: "+product[6]);
             $("#product-name").html(product[1]);
             $("#product-image").html("<img src='http://localhost:8080/ipfs/" + product[3] + "' />");
             $("#product-price").html(displayPrice(product[6]));
